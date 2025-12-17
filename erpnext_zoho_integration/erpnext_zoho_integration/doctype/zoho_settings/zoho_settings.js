@@ -5,21 +5,32 @@ frappe.ui.form.on('Zoho Settings', {
     refresh: function(frm) {
         // Authorization button
         if (!frm.doc.is_active) {
-            frm.add_custom_button(__('Authorize with Zoho'), function() {
-                frappe.call({
-                    method: 'erpnext_zoho_integration.api.oauth.authorize',
-                    callback: function(r) {
-                        // Redirect happens automatically
-                    }
-                });
+            frm.add_custom_button(__('Authorize with Zoho'), () => {
+                window.location.href =
+                    "/api/method/erpnext_zoho_integration.erpnext_zoho_integration.api.oauth.authorize";
             }).addClass('btn-primary');
         }
-        
+
+        if (!frm.doc.is_active && frm.doc.code) {
+            frm.add_custom_button(__('Fetch Tokens'), function() {
+                frappe.call({
+                    method: 'erpnext_zoho_integration.erpnext_zoho_integration.api.oauth.fetch_tokens',
+                    args: { code: frm.doc.code },
+                    callback: function(r) {
+                        if (r.message) {
+                            frappe.msgprint(__('Tokens fetched successfully'), 'Success');
+                            frm.reload_doc();
+                        }
+                    }
+                });
+            });
+        }
+
         // Test Connection button
         if (frm.doc.is_active) {
             frm.add_custom_button(__('Test Connection'), function() {
                 frappe.call({
-                    method: 'erpnext_zoho_integration.api.campaigns.get_recent_campaigns',
+                    method: 'erpnext_zoho_integration.erpnext_zoho_integration.api.campaigns.get_recent_campaigns',
                     args: { limit: 5 },
                     callback: function(r) {
                         if (r.message) {
@@ -37,7 +48,7 @@ frappe.ui.form.on('Zoho Settings', {
             // View Campaigns button
             frm.add_custom_button(__('View Campaigns'), function() {
                 frappe.call({
-                    method: 'erpnext_zoho_integration.api.campaigns.get_recent_campaigns',
+                    method: 'erpnext_zoho_integration.erpnext_zoho_integration.api.campaigns.get_recent_campaigns',
                     args: { limit: 20 },
                     callback: function(r) {
                         if (r.message && r.message.campaigns) {
@@ -50,7 +61,7 @@ frappe.ui.form.on('Zoho Settings', {
             // Refresh Token button
             frm.add_custom_button(__('Refresh Token'), function() {
                 frappe.call({
-                    method: 'erpnext_zoho_integration.api.oauth.refresh_access_token',
+                    method: 'erpnext_zoho_integration.erpnext_zoho_integration.api.oauth.refresh_access_token',
                     callback: function(r) {
                         if (r.message) {
                             frappe.msgprint(__('Token refreshed successfully'), 'Success');
@@ -79,12 +90,29 @@ function show_campaigns_dialog(campaigns) {
     html += '<thead><tr><th>Campaign Name</th><th>Subject</th><th>Sent Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
     
     campaigns.forEach(campaign => {
+        const is_draft = campaign.campaign_status === 'Draft';
+
         html += `<tr>
             <td>${campaign.campaign_name}</td>
             <td>${campaign.subject}</td>
             <td>${campaign.sent_date_string || 'Not Sent'}</td>
-            <td><span class="indicator ${campaign.campaign_status === 'Sent' ? 'green' : 'orange'}">${campaign.campaign_status}</span></td>
-            <td><button class="btn btn-xs btn-default" onclick="view_campaign_report('${campaign.campaign_key}')">View Report</button></td>
+            <td>
+                <span class="indicator ${
+                    campaign.campaign_status === 'Sent' ? 'green' : 'orange'
+                }">
+                    ${campaign.campaign_status}
+                </span>
+            </td>
+            <td>
+                ${
+                    !is_draft
+                        ? `<button class="btn btn-xs btn-default"
+                            onclick="view_campaign_report('${campaign.campaign_key}')">
+                            View Report
+                        </button>`
+                        : ''
+                }
+            </td>
         </tr>`;
     });
     
@@ -95,7 +123,7 @@ function show_campaigns_dialog(campaigns) {
 
 window.view_campaign_report = function(campaign_key) {
     frappe.call({
-        method: 'erpnext_zoho_integration.api.campaigns.get_campaign_report',
+        method: 'erpnext_zoho_integration.erpnext_zoho_integration.api.campaigns.get_campaign_report',
         args: { campaign_key: campaign_key },
         callback: function(r) {
             if (r.message) {
