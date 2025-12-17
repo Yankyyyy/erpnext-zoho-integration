@@ -1,13 +1,13 @@
 // Copyright (c) 2025, Yanky and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Zoho Campaigns Settings', {
+frappe.ui.form.on('Zoho Settings', {
     refresh: function(frm) {
         // Authorization button
         if (!frm.doc.is_active) {
             frm.add_custom_button(__('Authorize with Zoho'), function() {
                 frappe.call({
-                    method: 'erpnext_zoho_campaigns.api.oauth.authorize',
+                    method: 'erpnext_zoho_integration.api.oauth.authorize',
                     callback: function(r) {
                         // Redirect happens automatically
                     }
@@ -19,7 +19,7 @@ frappe.ui.form.on('Zoho Campaigns Settings', {
         if (frm.doc.is_active) {
             frm.add_custom_button(__('Test Connection'), function() {
                 frappe.call({
-                    method: 'erpnext_zoho_campaigns.api.campaigns.get_recent_campaigns',
+                    method: 'erpnext_zoho_integration.api.campaigns.get_recent_campaigns',
                     args: { limit: 5 },
                     callback: function(r) {
                         if (r.message) {
@@ -37,7 +37,7 @@ frappe.ui.form.on('Zoho Campaigns Settings', {
             // View Campaigns button
             frm.add_custom_button(__('View Campaigns'), function() {
                 frappe.call({
-                    method: 'erpnext_zoho_campaigns.api.campaigns.get_recent_campaigns',
+                    method: 'erpnext_zoho_integration.api.campaigns.get_recent_campaigns',
                     args: { limit: 20 },
                     callback: function(r) {
                         if (r.message && r.message.campaigns) {
@@ -50,7 +50,7 @@ frappe.ui.form.on('Zoho Campaigns Settings', {
             // Refresh Token button
             frm.add_custom_button(__('Refresh Token'), function() {
                 frappe.call({
-                    method: 'erpnext_zoho_campaigns.api.oauth.refresh_access_token',
+                    method: 'erpnext_zoho_integration.api.oauth.refresh_access_token',
                     callback: function(r) {
                         if (r.message) {
                             frappe.msgprint(__('Token refreshed successfully'), 'Success');
@@ -95,7 +95,7 @@ function show_campaigns_dialog(campaigns) {
 
 window.view_campaign_report = function(campaign_key) {
     frappe.call({
-        method: 'erpnext_zoho_campaigns.api.campaigns.get_campaign_report',
+        method: 'erpnext_zoho_integration.api.campaigns.get_campaign_report',
         args: { campaign_key: campaign_key },
         callback: function(r) {
             if (r.message) {

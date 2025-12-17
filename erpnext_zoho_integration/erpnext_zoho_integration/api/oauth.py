@@ -6,10 +6,10 @@ from datetime import datetime, timedelta
 @frappe.whitelist(allow_guest=True)
 def authorize():
     """Redirect user to Zoho OAuth consent screen"""
-    settings = frappe.get_single("Zoho Campaigns Settings")
+    settings = frappe.get_single("Zoho Settings")
     
     if not settings.client_id or not settings.redirect_uri:
-        frappe.throw(_("Please configure Client ID and Redirect URI in Zoho Campaigns Settings"))
+        frappe.throw(_("Please configure Client ID and Redirect URI in Zoho Settings"))
     
     auth_url = (
         f"https://accounts.zoho.in/oauth/v2/auth?"
@@ -43,7 +43,7 @@ def callback():
     if not code:
         frappe.throw(_("Authorization code not received"))
     
-    settings = frappe.get_single("Zoho Campaigns Settings")
+    settings = frappe.get_single("Zoho Settings")
     
     token_url = "https://accounts.zoho.in/oauth/v2/token"
     payload = {
@@ -73,9 +73,9 @@ def callback():
         frappe.db.commit()
         
         # Show success message and redirect
-        frappe.msgprint(_("Successfully connected to Zoho Campaigns!"), indicator="green")
+        frappe.msgprint(_("Successfully connected to Zoho!"), indicator="green")
         frappe.local.response["type"] = "redirect"
-        frappe.local.response["location"] = "/app/zoho-campaigns-settings"
+        frappe.local.response["location"] = "/app/zoho-settings"
         
     except requests.exceptions.RequestException as e:
         frappe.log_error(frappe.get_traceback(), _("Zoho OAuth Callback Error"))
@@ -84,7 +84,7 @@ def callback():
 
 def refresh_access_token():
     """Refresh access token using refresh token"""
-    settings = frappe.get_single("Zoho Campaigns Settings")
+    settings = frappe.get_single("Zoho Settings")
     
     if not settings.refresh_token:
         frappe.throw(_("No refresh token available. Please re-authorize."))

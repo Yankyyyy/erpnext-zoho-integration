@@ -6,10 +6,10 @@ from datetime import datetime, timedelta
 
 def get_valid_token():
     """Get valid access token, refresh if expired"""
-    settings = frappe.get_single("Zoho Campaigns Settings")
+    settings = frappe.get_single("Zoho Settings")
     
     if not settings.is_active:
-        frappe.throw(_("Zoho Campaigns integration is not active"))
+        frappe.throw(_("Zoho integration is not active"))
     
     # Check if token is expired or about to expire (5 min buffer)
     if settings.token_expiry and datetime.now() >= (settings.token_expiry - timedelta(minutes=5)):
