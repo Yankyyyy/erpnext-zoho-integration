@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestZohoCampaignsSettings(FrappeTestCase):
+class TestZohoSettings(FrappeTestCase):
 	pass

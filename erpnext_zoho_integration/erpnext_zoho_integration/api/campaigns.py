@@ -1,20 +1,24 @@
 import frappe
 import requests
 from frappe import _
-from erpnext_zoho_integration.api.oauth import refresh_access_token
+from erpnext_zoho_integration.erpnext_zoho_integration.api.oauth import refresh_access_token
 from datetime import datetime, timedelta
+
+from frappe.utils import get_datetime, now_datetime
 
 def get_valid_token():
     """Get valid access token, refresh if expired"""
-    settings = frappe.get_single("Zoho Campaigns Settings")
-    
+    settings = frappe.get_single("Zoho Settings")
+
     if not settings.is_active:
-        frappe.throw(_("Zoho Campaigns integration is not active"))
-    
-    # Check if token is expired or about to expire (5 min buffer)
-    if settings.token_expiry and datetime.now() >= (settings.token_expiry - timedelta(minutes=5)):
+        frappe.throw(_("Zoho integration is not active"))
+
+    token_expiry = get_datetime(settings.token_expiry)
+
+    # Refresh if expired or about to expire (5 min buffer)
+    if token_expiry and now_datetime() >= (token_expiry - timedelta(minutes=5)):
         return refresh_access_token()
-    
+
     return settings.get_password("access_token")
 
 
